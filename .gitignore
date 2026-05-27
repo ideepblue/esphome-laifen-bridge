@@ -1,0 +1,20 @@
+# Secrets
+secrets.yaml
+
+# ESPHome build files
+.esphome/
+__pycache__/
+
+# Environment variables
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
