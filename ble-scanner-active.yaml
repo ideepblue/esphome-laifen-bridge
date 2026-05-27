@@ -17,11 +17,11 @@ logger:
 api:
 
 wifi:
-  ssid: !secret wifi_ssid
-  password: !secret wifi_password
+  ssid: !env_var WIFI_SSID ""
+  password: !env_var WIFI_PASSWORD ""
   ap:
     ssid: "${friendly_name}"
-    password: "Laifen123"
+    password: !env_var ESPHOME_FALLBACK_AP_PASSWORD "Laifen123"
 
 captive_portal:
 
@@ -34,6 +34,7 @@ esp32_ble_tracker:
     interval: 100ms
     window: 100ms
     active: true
+    duration: 60s
   on_ble_advertise:
     - then:
         - lambda: |-
