@@ -8,7 +8,8 @@
 |------|------|
 | `laifen-bridge.yaml` | 徕芬桥接固件主配置 |
 | `ble-scanner-active.yaml` | BLE 扫描器（调试用，主动扫描） |
-| `secrets.yaml` | WiFi 凭据（不要提交到 git） |
+| `.env` | WiFi 凭据和环境变量（不要提交到 git） |
+| `.env.example` | 环境变量模板 |
 
 ## 硬件要求
 
@@ -26,13 +27,18 @@ source .venv/bin/activate
 pip install esphome
 ```
 
-### 2. 配置 WiFi
+### 2. 配置环境变量
 
-编辑 `secrets.yaml`：
+```bash
+cp .env.example .env
+```
 
-```yaml
-wifi_ssid: "你的WiFi名称"
-wifi_password: "你的WiFi密码"
+编辑 `.env`，填入你的 WiFi 信息：
+
+```env
+WIFI_SSID=你的WiFi名称
+WIFI_PASSWORD=你的WiFi密码
+ESPHOME_FALLBACK_AP_PASSWORD=Laifen123
 ```
 
 ### 3. 查找徕芬灯 MAC 地址
@@ -40,7 +46,7 @@ wifi_password: "你的WiFi密码"
 如果不知道灯的 MAC 地址，先刷扫描器固件：
 
 ```bash
-export ESPHOME_FALLBACK_AP_PASSWORD=Laifen123
+set -a && source .env && set +a
 esphome run ble-scanner-active.yaml --device /dev/cu.usbmodemXXXX
 ```
 
@@ -57,13 +63,13 @@ laifen_mac: "你的徕芬灯MAC地址"
 ### 5. 编译并刷入固件
 
 ```bash
-export ESPHOME_FALLBACK_AP_PASSWORD=Laifen123
+set -a && source .env && set +a
 esphome run laifen-bridge.yaml --device /dev/cu.usbmodemXXXX
 ```
 
 ### 6. 验证
 
-刷入成功后，访问 `http://esp32-laifen-bridge.local` 应该能看到 Web 控制界面。
+刷入成功后，访问 `http://esp32-c3-laifen-bridge.local` 应该能看到 Web 控制界面。
 
 ## 控制方式
 
@@ -98,14 +104,17 @@ cp .env.example .env
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
+| `WIFI_SSID` | WiFi 名称（不设置则使用 AP 模式） | 空 |
+| `WIFI_PASSWORD` | WiFi 密码 | 空 |
 | `ESPHOME_FALLBACK_AP_PASSWORD` | ESP32 备用热点密码 | `Laifen123` |
 
 ## 故障排查
 
 ### ESP32 无法连接 WiFi
-1. 检查 `secrets.yaml` 中的 WiFi 凭据
-2. 连接 ESP32 的备用热点 `ESP32 Laifen Bridge`（密码：`Laifen123`）
-3. 访问 `192.168.4.1` 重新配置 WiFi
+1. 检查 `.env` 中的 `WIFI_SSID` 和 `WIFI_PASSWORD`
+2. 确保刷入时已加载环境变量：`set -a && source .env && set +a`
+3. 连接 ESP32 的备用热点 `ESP32 Laifen Bridge`（密码：`Laifen123`）
+4. 访问 `192.168.4.1` 重新配置 WiFi
 
 ### 无法找到徕芬灯
 1. 确保灯已开机
