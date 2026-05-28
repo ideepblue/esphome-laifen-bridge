@@ -133,6 +133,10 @@ cp .env.example .env
 - BLE Control Characteristic UUID: `0000ff02-0000-1000-8000-00805f9b34fb`
 - 协议来源：Android HCI snoop 逆向
 
+## 致谢
+
+- BLE 协议逆向与初始实现：[yzlnew/ha-config-as-code](https://github.com/yzlnew/ha-config-as-code/blob/main/esphome/laifen-bridge.yaml)
+
 ## 许可证
 
 MIT License
