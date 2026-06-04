@@ -9,6 +9,9 @@ __pycache__/
 .env
 .env.local
 
+# Firmware archives (tracked in git)
+!firmware-archives/
+
 # OS files
 .DS_Store
 Thumbs.db
