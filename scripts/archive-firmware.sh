@@ -35,7 +35,7 @@ for BOARD in "${BOARDS[@]}"; do
 
     cp "${BUILD_DIR}/firmware.ota.bin" "${ARCHIVE_DIR}/${BOARD}-${VERSION}.ota.bin"
     cp "${BUILD_DIR}/firmware.factory.bin" "${ARCHIVE_DIR}/${BOARD}-${VERSION}.factory.bin"
-    echo "Archived: ${BOARD} v${VERSION}"
+    echo "Archived: ${BOARD} ${VERSION}"
 done
 
 echo ""

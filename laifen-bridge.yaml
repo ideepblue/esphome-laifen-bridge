@@ -18,6 +18,9 @@ esphome:
     then:
       - delay: 5s
       - script.execute: laifen_init
+      - text_sensor.template.publish:
+          id: firmware_version_sensor
+          state: "${firmware_version}"
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -305,6 +308,17 @@ script:
             - logger.log:
                 format: "Laifen set_all: upper=%d/%d lower=%d/%d temp=%dK"
                 args: ["upper_on", "upper_brightness", "lower_on", "lower_brightness", "kelvin"]
+            # 如果要开灯，先发送开灯命令
+            - if:
+                condition:
+                  lambda: return upper_on || lower_on;
+                then:
+                  - logger.log: "Sending master on command first"
+                  - script.execute:
+                      id: laifen_raw_write
+                      payload: [0xAA, 0x01, 0x08, 0x00, 0x00, 0x01, 0x01, 0xA3]
+                  - delay: 100ms
+            # 然后发送组合命令设置亮度和色温
             - ble_client.ble_write:
                 id: laifen_client
                 service_uuid: ${laifen_service_uuid}

@@ -31,7 +31,7 @@ if [ -z "$VERSION" ]; then
 fi
 
 echo "=========================================="
-echo "Building firmware v${VERSION}"
+echo "Building firmware ${VERSION}"
 echo "=========================================="
 
 # Compile both boards
@@ -54,5 +54,5 @@ echo "=========================================="
 
 echo ""
 echo "=========================================="
-echo "Build complete! v${VERSION}"
+echo "Build complete! ${VERSION}"
 echo "=========================================="
