@@ -1,7 +1,7 @@
 substitutions:
   device_name: esp32-c3-laifen-bridge
   friendly_name: ESP32 Laifen Bridge
-  firmware_version: "v2.4"
+  firmware_version: "v2.5"
   laifen_mac: "FF:85:59:47:02:0F"
   laifen_service_uuid: "0000ff01-0000-1000-8000-00805f9b34fb"
   laifen_control_char_uuid: "0000ff02-0000-1000-8000-00805f9b34fb"
@@ -333,17 +333,7 @@ script:
             - logger.log:
                 format: "Laifen set_all: upper=%d/%d lower=%d/%d temp=%dK"
                 args: ["upper_on", "upper_brightness", "lower_on", "lower_brightness", "kelvin"]
-            # 如果要开灯，先发送开灯命令
-            - if:
-                condition:
-                  lambda: return upper_on || lower_on;
-                then:
-                  - logger.log: "Sending master on command first"
-                  - script.execute:
-                      id: laifen_raw_write
-                      payload: [0xAA, 0x01, 0x08, 0x00, 0x00, 0x01, 0x01, 0xA3]
-                  - delay: 10ms
-            # 然后发送组合命令设置亮度和色温
+            # 发送组合命令设置亮度和色温
             - ble_client.ble_write:
                 id: laifen_client
                 service_uuid: ${laifen_service_uuid}
@@ -485,40 +475,3 @@ button:
 
   - platform: restart
     name: "Bridge Board Restart"
-
-  # 测试按钮：单独控制上下灯
-  - platform: template
-    name: "Test Upper Light On"
-    on_press:
-      - script.execute:
-          id: laifen_send
-          command: 0x01
-          value: 1
-
-  - platform: template
-    name: "Test Lower Light On"
-    on_press:
-      - script.execute:
-          id: laifen_send
-          command: 0x03
-          value: 1
-
-  - platform: template
-    name: "Test Both Lights On"
-    on_press:
-      - script.execute:
-          id: laifen_send
-          command: 0x01
-          value: 1
-      - delay: 10ms
-      - script.execute:
-          id: laifen_send
-          command: 0x03
-          value: 1
-
-  - platform: template
-    name: "Test Master On"
-    on_press:
-      - script.execute:
-          id: laifen_raw_write
-          payload: [0xAA, 0x01, 0x08, 0x00, 0x00, 0x01, 0x01, 0xA3]
