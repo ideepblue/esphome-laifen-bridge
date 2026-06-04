@@ -378,30 +378,6 @@ script:
                 level: WARN
                 format: "Laifen set_all skipped, BLE not ready"
 
-  # 查询灯状态
-  - id: laifen_query_status
-    mode: single
-    then:
-      - wait_until:
-          condition:
-            lambda: return id(laifen_client).connected();
-          timeout: 20s
-      - if:
-          condition:
-            lambda: return id(laifen_client).connected();
-          then:
-            - logger.log: "Querying Laifen status..."
-            # 发送状态查询命令
-            - script.execute:
-                id: laifen_raw_write
-                payload: [0xAA, 0x01, 0x05, 0x00, 0x00, 0x07, 0x07, 0xEA, 0x05, 0x18, 0x01, 0x24, 0x2F, 0x53]
-            - delay: 500ms
-            - logger.log: "Status query sent, check logs for response"
-          else:
-            - logger.log:
-                level: WARN
-                format: "Laifen query skipped, BLE not connected"
-
 switch:
   - platform: template
     name: "Laifen Master Light"
@@ -503,9 +479,9 @@ number:
 
 button:
   - platform: template
-    name: "Laifen Query Status"
+    name: "Laifen Init"
     on_press:
-      - script.execute: laifen_query_status
+      - script.execute: laifen_init
 
   - platform: restart
-    name: "Laifen Restart"
+    name: "Bridge Board Restart"
