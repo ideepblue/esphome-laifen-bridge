@@ -1,7 +1,7 @@
 substitutions:
   device_name: esp32-c3supermini-laifen-bridge
   friendly_name: ESP32 Laifen Bridge
-  firmware_version: "v2.2"
+  firmware_version: "v2.3"
   laifen_mac: "FF:85:59:47:02:0F"
   laifen_service_uuid: "0000ff01-0000-1000-8000-00805f9b34fb"
   laifen_control_char_uuid: "0000ff02-0000-1000-8000-00805f9b34fb"
@@ -341,7 +341,7 @@ script:
                   - script.execute:
                       id: laifen_raw_write
                       payload: [0xAA, 0x01, 0x08, 0x00, 0x00, 0x01, 0x01, 0xA3]
-                  - delay: 100ms
+                  - delay: 10ms
             # 然后发送组合命令设置亮度和色温
             - ble_client.ble_write:
                 id: laifen_client
