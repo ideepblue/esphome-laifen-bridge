@@ -1,7 +1,7 @@
 substitutions:
   device_name: esp32-c3supermini-laifen-bridge
   friendly_name: ESP32 Laifen Bridge
-  firmware_version: "v2"
+  firmware_version: "v2.1"
   laifen_mac: "FF:85:59:47:02:0F"
   laifen_service_uuid: "0000ff01-0000-1000-8000-00805f9b34fb"
   laifen_control_char_uuid: "0000ff02-0000-1000-8000-00805f9b34fb"
@@ -127,6 +127,30 @@ text_sensor:
         - lambda: |-
             std::vector<uint8_t> bytes(x.begin(), x.end());
             ESP_LOGD("laifen", "Laifen RX %s", format_hex_pretty(bytes).c_str());
+
+            // 解析状态响应 (假设格式: [0xAA, 0x01, 0x05, ...])
+            if (bytes.size() >= 14 && bytes[0] == 0xAA && bytes[1] == 0x01 && bytes[2] == 0x05) {
+              // 解析上灯状态
+              bool upper_on = bytes[7] == 0x01;
+              uint8_t upper_bri = bytes[8];
+              bool lower_on = bytes[9] == 0x01;
+              uint8_t lower_bri = bytes[10];
+
+              // 解析色温 (2字节大端)
+              uint16_t color_temp = (bytes[11] << 8) | bytes[12];
+              if (color_temp < 2700) color_temp = 2700;
+              if (color_temp > 6500) color_temp = 6500;
+
+              // 更新实体状态
+              id(laifen_upper_light).publish_state(upper_on);
+              id(laifen_lower_light).publish_state(lower_on);
+              id(laifen_upper_brightness).publish_state(upper_bri);
+              id(laifen_lower_brightness).publish_state(lower_bri);
+              id(laifen_color_temperature).publish_state(color_temp);
+
+              ESP_LOGI("laifen", "Status parsed: upper=%d/%d lower=%d/%d temp=%dK",
+                       upper_on, upper_bri, lower_on, lower_bri, color_temp);
+            }
 
 globals:
   - id: laifen_accept_commands
@@ -353,6 +377,30 @@ script:
                 level: WARN
                 format: "Laifen set_all skipped, BLE not ready"
 
+  # 查询灯状态
+  - id: laifen_query_status
+    mode: single
+    then:
+      - wait_until:
+          condition:
+            lambda: return id(laifen_client).connected();
+          timeout: 20s
+      - if:
+          condition:
+            lambda: return id(laifen_client).connected();
+          then:
+            - logger.log: "Querying Laifen status..."
+            # 发送状态查询命令
+            - script.execute:
+                id: laifen_raw_write
+                payload: [0xAA, 0x01, 0x05, 0x00, 0x00, 0x07, 0x07, 0xEA, 0x05, 0x18, 0x01, 0x24, 0x2F, 0x53]
+            - delay: 500ms
+            - logger.log: "Status query sent, check logs for response"
+          else:
+            - logger.log:
+                level: WARN
+                format: "Laifen query skipped, BLE not connected"
+
 switch:
   - platform: template
     name: "Laifen Master Light"
@@ -456,7 +504,7 @@ button:
   - platform: template
     name: "Laifen Query Status"
     on_press:
-      - script.execute: laifen_init
+      - script.execute: laifen_query_status
 
   - platform: restart
     name: "Laifen Restart"
